@@ -1,0 +1,63 @@
+plugins {
+    id 'java'
+    id 'org.jetbrains.kotlin.jvm' version '1.3.11'
+}
+
+group 'com.securepay.sourcecode'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+
+    // Mybatis Generator
+    mybatisGenerator group: 'org.mybatis.generator', name: 'mybatis-generator-core', version: '1.3.5'
+    mybatisGenerator group: 'mysql', name: 'mysql-connector-java', version: '8.0.13'
+    mybatisGenerator group: 'tk.mybatis', name: 'mapper', version: '4.0.4'
+    
+    
+}
+
+compileKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+compileTestKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+task mybatisGenerator {
+    doLast {
+        def properties = new Properties()
+        file('src/main/resources/mybatis/generator_config.properties').withInputStream { inputStream ->
+            properties.load(inputStream)
+        }
+        ant.properties['targetProject'] = properties.getProperty('target.project')
+        ant.properties['driverClass'] = properties.getProperty('db.driverClassName')
+        ant.properties['connectionURL'] = properties.getProperty('db.url')
+        ant.properties['schema'] = properties.getProperty('db.schema')
+        ant.properties['userId'] = properties.getProperty('db.username')
+        ant.properties['password'] = properties.getProperty('db.password')
+        ant.properties['modelPackage'] = properties.getProperty('package.model')
+        ant.properties['mapperPackage'] = properties.getProperty('package.mapper')
+        ant.properties['sqlMapperPackage'] = properties.getProperty('package.xml')
+        ant.taskdef(name: 'mbgenerator', classname: 'org.mybatis.generator.ant.GeneratorAntTask', classpath: configurations.mybatisGenerator.asPath)
+        ant.mbgenerator(overwrite: true, configfile: 'src/main/resources/mybatis/generator_config.xml', verbose: true) {
+            propertyset {
+                propertyref(name: 'targetProject')
+                propertyref(name: 'userId')
+                propertyref(name: 'driverClass')
+                propertyref(name: 'connectionURL')
+                propertyref(name: 'password')
+                propertyref(name: 'schema')
+                propertyref(name: 'modelPackage')
+                propertyref(name: 'mapperPackage')
+                propertyref(name: 'sqlMapperPackage')
+            }
+        }
+    }
+}
