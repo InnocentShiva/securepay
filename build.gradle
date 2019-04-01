@@ -8,6 +8,11 @@ version '1.0-SNAPSHOT'
 
 sourceCompatibility = 1.8
 
+configurations {
+    all*.exclude module: 'spring-boot-starter-logging'
+    mybatisGenerator
+}
+
 repositories {
     mavenCentral()
 }
